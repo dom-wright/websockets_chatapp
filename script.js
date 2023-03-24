@@ -10,13 +10,21 @@ webSocket.onopen = function () {
 
 webSocket.onmessage = function (event) {
     const message = event.data;
-    let parts = message.split(':')
-    let lineBreak = document.createElement('br')
-    let nameElem = document.createElement('span')
-    nameElem.classList.add('fw-bold', 'text-info')
-    nameElem.innerHTML = parts[0]
+    messageDict = processMessage(message)
+    const nameColor = processColour(messageDict['user_colour'])
+
+    // name element
+    const nameElem = document.createElement('span')
+    nameElem.classList.add('fw-bold')
+    nameElem.style.color = nameColor
+    nameElem.innerHTML = messageDict['name']
     messagesOutput.appendChild(nameElem)
-    messagesOutput.innerHTML += `: ${parts[1]}`
+
+    // add message
+    messagesOutput.innerHTML += `: ${messageDict['message']}`
+
+    // add linebreak
+    let lineBreak = document.createElement('br')
     messagesOutput.appendChild(lineBreak)
 };
 
@@ -35,12 +43,6 @@ const messagesOutput = document.getElementById('messages');
 const sendButton = document.getElementById('send-button');
 const closeButton = document.getElementById('close-button');
 
-function sendMessage() {
-    const message = messageInput.value;
-    webSocket.send(message);
-    messageInput.value = '';
-}
-
 messageInput.addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
         event.preventDefault()
@@ -55,3 +57,27 @@ sendButton.addEventListener('click', function () {
 closeButton.addEventListener('click', function () {
     webSocket.close();
 });
+
+messagesOutput.addEventListener('DOMSubtreeModified', scrollToBottom);
+
+// Functions
+
+function sendMessage() {
+    const message = messageInput.value;
+    if (message) {
+        webSocket.send(message);
+    }
+    messageInput.value = '';
+}
+
+function scrollToBottom() {
+    messagesOutput.scrollTop = messagesOutput.scrollHeight;
+}
+
+function processMessage(message) {
+    return JSON.parse(message)
+}
+
+function processColour(colour) {
+    return `rgb(${colour[0]}, ${colour[1]}, ${colour[2]})`
+}
