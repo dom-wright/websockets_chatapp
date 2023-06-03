@@ -1,5 +1,4 @@
 // Websocket
-
 const webSocket = new WebSocket('ws://localhost:8888/websocket');
 
 webSocket.onopen = function () {
@@ -10,14 +9,15 @@ webSocket.onopen = function () {
 
 webSocket.onmessage = function (event) {
     const message = event.data;
-    messageDict = processMessage(message)
-    const nameColor = processColour(messageDict['user_colour'])
+    const messageDict = processMessage(message)
+    const messageColour = messageDict['colour'] || "[0, 0, 0]"
+    const nameColour = processColour(messageColour)
 
     // name element
     const nameElem = document.createElement('span')
     nameElem.classList.add('fw-bold')
-    nameElem.style.color = nameColor
-    nameElem.innerHTML = messageDict['name']
+    nameElem.style.color = nameColour
+    nameElem.innerHTML = messageDict['username']
     messagesOutput.appendChild(nameElem)
 
     // add message
@@ -59,6 +59,10 @@ closeButton.addEventListener('click', function () {
 });
 
 messagesOutput.addEventListener('DOMSubtreeModified', scrollToBottom);
+
+window.onbeforeunload = function () {
+    webSocket.close();
+};
 
 // Functions
 
